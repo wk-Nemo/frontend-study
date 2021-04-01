@@ -165,7 +165,6 @@ var buildTree = function(preorder, inorder) {
   return root
 }
 
-
 var root = new TreeNode(3)
 root.left = new TreeNode(9)
 root.right = new TreeNode(20)
