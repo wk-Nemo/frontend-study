@@ -57,6 +57,39 @@ function quickSort(arr, begin, end) {
   quickSort(arr, begin, i-1)
   quickSort(arr, i+1, end)
 }
+// quickSort(num_1, 0, num_1.length - 1)
+// console.log(num_1)
+
+
+function quickSort1(arr, start, end) {
+  console.log(arr)
+  if (start > end) {
+    return 
+  }
+  let flag = arr[start],
+      i = start,
+      j = end
+  while (i != j) {
+    while (arr[j] >= flag && i < j) {
+      j--
+    }
+    while (arr[i] <= flag && i < j) {
+      i++
+    }
+    if (i < j) {
+      var temp = arr[i]
+      arr[i] = arr[j]
+      arr[j] = temp
+    }
+  }
+  arr[start] = arr[i]
+  arr[i] = flag
+  quickSort1(arr, start, i - 1)
+  quickSort1(arr, i + 1, end)
+}
+
+quickSort1(num_1, 0, num_1.length - 1)
+console.log(num_1)
 
 // 快速排序寻找中位数
 function find_quickSort(arr, begin, end) {
@@ -95,7 +128,7 @@ function find_quickSort(arr, begin, end) {
 function insertSort(arr) {
   let len = arr.length
   let preInt, current
-  for (let i=1; i<arr.length; i++) {
+  for (let i=1; i<len; i++) {
     preInt = i - 1
     current = arr[i]
     while (preInt >= 0 && arr[preInt] > current) {
@@ -106,6 +139,23 @@ function insertSort(arr) {
     console.log(`第${i}次循环`, arr);
   }
 }
+
+function insertSort1(arr) {
+  const len = arr.length
+  for (let i = 1; i < len; i++) {
+    for (let j = i; j > 0; j--) {
+      if (arr[j] < arr[j-1]) {
+        var temp = arr[j]
+        arr[j] = arr[j-1]
+        arr[j-1] = temp 
+      } else {
+        break
+      }
+    }
+  }
+  console.log(arr)
+}
+// insertSort1(num_1)
 
 // 折半插入排序
 function binserSort(arr) {
@@ -163,7 +213,38 @@ function merge(left, right) {
   return result
 }
 
-console.log(mergeSort(num_0))
+function merge1(left, right){
+  const result = []
+  while(left.length && right.length) {
+    if (left[0] < right[0]) {
+      result.push(left.shift())
+    } else {
+      result.push(right.shift())
+    }
+  }
+  while (left.length) {
+    result.push(left.shift())
+  }
+  while(right.length) {
+    result.push(right.shift())
+  }
+  return result
+}
+
+function mergeSort1(arr) {
+  let len = arr.length
+  if (len > 1) {
+    let left = mergeSort1(arr.slice(0, Math.floor(len / 2)))
+    let right = mergeSort1(arr.slice(Math.floor(len / 2)))
+    return merge1(left, right)
+  } else {
+    return arr
+  }
+}
+
+// console.log(mergeSort1(num_1))
+
+// console.log(mergeSort(num_0))
 
 
 
