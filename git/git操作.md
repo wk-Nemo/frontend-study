@@ -30,3 +30,8 @@ bug test
 git reset HEAD^
 ```
 
+### 在分支拉去主分支
+```
+git pull origin main
+```
+
