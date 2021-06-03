@@ -18,6 +18,10 @@ git add .
 git commit -m 'fix: 修复bug'
 ```
 
+### 合并分支
+```
+git merge name
+```
 
 ### 回退版本
 回退上一个版本
