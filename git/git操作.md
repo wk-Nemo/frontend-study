@@ -12,3 +12,9 @@ git branch name
 git checkout name
 ```
 
+### 提交
+```
+git add .
+git commit -m 'fix: 修复bug'
+```
+
