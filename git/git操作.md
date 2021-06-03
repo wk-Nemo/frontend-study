@@ -19,3 +19,9 @@ git commit -m 'fix: 修复bug'
 ```
 
 
+### 回退版本
+回退上一个版本
+```
+git reset HEAD^
+```
+
