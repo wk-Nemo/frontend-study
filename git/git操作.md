@@ -21,7 +21,7 @@ git commit -m 'fix: 修复bug'
 ### 合并分支
 ```
 git merge name
-bug test
+bug hello
 ```
 
 ### 回退版本
