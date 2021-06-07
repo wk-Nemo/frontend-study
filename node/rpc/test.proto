@@ -1,0 +1,5 @@
+message Column {
+  require int32 id = 1;
+  require string name = 2;
+  require float price = 3;
+}
