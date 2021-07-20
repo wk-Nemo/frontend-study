@@ -35,13 +35,27 @@ node 是webpack包管理和前端接触服务器端、数据库等操作的入�
 前端框架，react也很重要，但是自己目前的工作是vue，对vue更熟悉，因此先把框架重心放在vue上，后面有时间再去啃react。
 - 实战项目
 - vue原理
-  - 数据双向绑定
+  - MVVM
+  - vue的数据双向绑定（对象和数据）
+  - 观察者模式和发布订阅模式
+  - vue是如何检测数组变化
+  - vue的单项数据流
+  - computed和watch
   - 虚拟DOM
-  - 模版编译
-  - 服务器端渲染
-  - 生命周期
-  - vuex
-  - vue路由
+  - v-for中的key的作用
+  - nextTick的使用
+  - vue的生命周期
+  - @hook监听子组件的生命周期
+  - Vue 的父组件和子组件生命周期钩子函数执行顺序？
+  - keep-alive的使用
+  - vue的内部指令
+  - class和style的绑定方法
+  - data为什么是一个函数
+  - Vue之间的通信方式
+  - Vuex
+  - vue的路由
+  - SPA单页面
+  - SSR
 
 ## 项目经历
 
