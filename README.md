@@ -3,6 +3,8 @@
 
 ## 计划安排
 
+计划表：[前端学习计划表](https://au3hgjedwm.feishu.cn/base/bascna0RT34NwQ8VJnYCQwb7FKb?table=tblwTeJ6OKH2AIi2&view=vewJHSwJVd)
+
 **九月份之前准备面试，主要是针对自己的简历进行复习：**
  - 基础部分：需要牢固掌握的
     - html、css、js
