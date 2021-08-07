@@ -199,5 +199,41 @@ child2.getAge(); // 21
 child2.getName(); // cy
 console.log(child2.friends); // ["rose", "lily", "tom"]
 
+/**
+ * 拷贝
+ */
+
+// 浅拷贝
+function shallowCopy(obj) {
+  if (typeof obj !== 'object') {
+    return false;
+  }
+  let newObj = Array.isArray(obj) ? [] : {}
+  for (let i in obj) {
+    // Obj.hasOwnProperty判断属性是实例上的还是原型上的
+    if (obj.hasOwnProperty(i)) {
+      newObj[i] = obj[i]
+    }
+  } 
+}
+
+// 深拷贝
+function jsonCopy(obj) {
+  return JSON.parse(JSON.stringify(obj))
+}
+
+
+function deepCopy(target) {
+  if (typeof target !== 'object') {
+    return target
+  }
+  let cloneObj = Array.isArray(target) ? [] : {};
+  for (let i in target) {
+    if (target.hasOwnProperty(i)) {
+      cloneObj[i] = target[i]
+    }
+  }
+  return cloneObj;
+}
 
 
