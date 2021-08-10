@@ -51,14 +51,13 @@ js 首先对基础知识进行总结，搭建一个基本的知识体系，能�
 - 事件 【2021-08-11 wait】
 
 ## 浏览器 【2021-08-11 wait】
-- HTML中使用js
-- 浏览器缓存：强缓存和协商缓存
-- 浏览器本地存储:cookie、localStorage和sessionStore
+- HTML中使用js 【2021-08-10 done】
+- 浏览器缓存：强缓存和协商缓存 【2021-08-10 done】
+- 浏览器本地存储:cookie、localStorage和sessionStore 【2021-08-10 done】
 - 从网络的角度：输入URL发生了什么
 - 从浏览器解析的角度：输入URL发生了什么
 - 从浏览器渲染的角度：输入URL发生了什么
 - 从浏览器回流和重绘的角度：输入URL发生了什么
-- ajax & XMLHttpRequest
 - 跨域的解决办法
 - 网络安全
 
