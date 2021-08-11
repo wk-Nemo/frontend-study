@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      html,
+      body {
+        height: 100%;
+      }
+
+      div {
+        height: 100%;
+      }
+
+      .main {
+        float: left;
+        width: 100%;
+        background: #f00;
+      }
+
+      .main .content {
+        margin-left: 200px;
+        margin-right: 300px;
+      }
+
+      .left {
+        width: 200px;
+        background: #0f0;
+        float: left;
+        margin-left: -100%;
+      }
+
+      .right {
+        width: 300px;
+        background: #00f;
+        float: left;
+        margin-left: -300px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="main">
+      <div class="content">hello world</div>
+    </div>
+    <div class="left">你好</div>
+    <div class="right">王鹏浩</div>
+  </body>
+</html>
+

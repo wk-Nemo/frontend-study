@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      .container {
+        padding: 0 300px 0 200px;
+        border: 1px solid black;
+      }
+
+      .content {
+        float: left;
+        width: 100%;
+        background: #f00;
+      }
+
+      .left {
+        width: 200px;
+        background: #0f0;
+        float: left;
+        margin-left: -100%;
+        position: relative;
+        left: -200px;
+      }
+
+      .right {
+        width: 300px;
+        background: #00f;
+        float: left;
+        margin-left: -300px;
+        position: relative;
+        right: -300px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="content">中间内容</div>
+      <div class="left">左侧区域</div>
+      <div class="right">右侧区域</div>
+    </div>
+  </body>
+</html>
+
