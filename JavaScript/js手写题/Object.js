@@ -236,4 +236,17 @@ function deepCopy(target) {
   return cloneObj;
 }
 
+// 手写原型链
+function child() {
+  this.name = "child"
+}
 
+function father() {
+  this.name = "father"
+}
+
+father.prototype.sayName = function() {
+  console.log(this.name)
+}
+
+child.prototype = Object.create(father.prototype)
