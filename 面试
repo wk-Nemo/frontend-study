@@ -1,0 +1,543 @@
+## 写在前面
+
+前面几个月一直在准备基础知识，深入的了解了js、浏览器、计算机网络、vue、webpack等等。让我陷入了一个误区，那就是将面试当作了高考，要把所有的知识点全部复习到位。事实上并不是这样，前端的知识体系大而复杂，各个方向细开展可能这几个月是学习不完的。
+
+但是这并不是说之前的准备毫无作用，至少某些方面上来说。过去一年的学习，我从一点不懂，到接触前端，到使用框架，然后搭建自己的博客，参与项目和比赛，在人人实习，在腾讯实习。期间学习过新的知识点，也一直试图将所有的基础知识全部总结，很遗憾，我做不到。我承认自己没有那么强的能力，或者说那么多的时间去系统的学习所有的前端知识体系，但是我对前端的热爱一定会让我坚持下去，相信后面我会一点点的去学习总结
+
+在这个特殊的八月份我经历了很多，总之，我现在需要全新全意的去准备秋招。而从现在开始，我也不会再去采取原来的方式试图去总结所有可能遇到的问题。想起gp对我说的一句话，当所有的面经你看到后80%心里都有数后，那时机已经差不多了。相比于三月份被快排、链表、cookie、闭包一类问题难到的我，几个月的学习间我已经有了自己的知识体系，所以现在开始刷面试题，有的放矢。
+
+## html
+
+## css
+
+##### 1. 两栏布局
+
+**html:**
+
+```
+<div class="box">
+    <div class="left">左边</div>
+    <div class="right">右边</div>
+</div>
+```
+
+**css:**
+
+```
+// 1. 左浮动 + 右margin
+.left {
+    float: left;
+    width: 200px;
+    background: red;
+    height: 400px;
+}
+.right {
+    background-color: black;
+    height: 200px;
+    margin-left: 200px;
+}
+​
+// 2. flex布局
+.box {
+    display: flex;
+}
+.left {
+    flex: 0 0 auto
+}
+.right {
+    flex: 1 1 auto
+}
+​
+// 3. 相对定位
+```
+
+##### 2. 垂直水平居中
+
+-   相对定位
+-   flex布局
+-   margin： 0 auto + line-height
+
+##### 3. 什么是BFC
+
+> [面试官：请说说什么是BFC？大白话讲清楚](https://juejin.cn/post/6950082193632788493)
+
+"块级格式化上下文"， `BFC`是一个完全独立的空间（布局环境），让空间里的子元素不会影响到外面的布局。那么怎么使用`BFC`呢，`BFC`可以看做是一个`CSS`元素属性。
+
+**触发条件：**
+
+-   overflow: hidden
+-   display: inline-block
+-   display: table-cell
+-   display: flex
+-   position: absolute
+-   position: fixed
+
+**解决问题：**
+
+-   float的高度塌陷
+-   margin边距重叠
+-   两栏布局的问题
+
+##### 4. css实现三角形
+
+```css
+.div { 
+    width: 0px; 
+    height: 0px; 
+    border-bottom: 50px solid #66FFCC; 
+    border-left: 50px solid transparent; 
+    border-right: 50px solid transparent; 
+}
+```
+
+## js
+
+##### 1. 写一个原型链继承
+
+```javaScript
+// 手写原型链
+function child() {
+  this.name = "child"
+}
+
+function father() {
+  this.name = "father"
+}
+
+father.prototype.sayName = function() {
+  console.log(this.name)
+}
+
+child.prototype = Object.create(father.prototype)
+```
+
+![image.png](https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/2bb6d38ccacd4f1a8e97632001eaebf0~tplv-k3u1fbpfcp-watermark.image)
+
+##### 2. 实现getType(p)方法，返回变量p的数据类型，如:string、number、date、boolean、array等。
+
+```javaScript
+function getType(p) {
+  if (typeof p != 'object') {
+    return typeof p;
+  }
+  if (Array.isArray(p)) {
+    return 'array'
+  }
+  if (p instanceof Date) {
+    return 'date'
+  }
+  if (p instanceof RegExp) {
+    return 'regexp'
+  }
+  return 'object'
+}
+
+let p1 = function() {
+  this.a = 1
+}
+
+let p2 = {
+  a: 1
+}
+
+let p3 = [1, 2, 3]
+
+let p4 = new Date()
+
+let p5 = new RegExp()
+
+console.log(getType(p1)) // function
+console.log(getType(p2)) // object
+console.log(getType(p3)) // array
+console.log(getType(p4)) // date
+console.log(getType(p5)) // regexp
+```
+
+##### 3. 有一个祖先（ json 对象），当一个人有一个儿子的时候，其 child 为其儿子对象，如果有多个儿子，child 为儿子对象的数组。实现一个函数，找出所有有多个儿子的人的名字（name）并输出。
+
+```javaScript
+function find(obj) {
+  let res = []
+
+  function findSons(obj) {
+    if (obj.child && Array.isArray(obj.child)) {
+      res.push(obj.name);
+      for (let i = 0; i < obj.child.length; i++) {
+        findSons(obj.child[i])
+      }
+    } else {
+      if (obj.child) {
+        findSons(obj.child)
+      } else {
+        return
+      }
+    }
+  }
+
+  findSons(obj)
+
+  return res
+}
+
+let obj = {
+  name: "jack",
+  child: [
+    { name: "jack1" },
+    {
+      name: "jack2",
+      child: [
+        {
+          name: "jack2-1",
+          child: [
+            {
+              name: "wk"
+            },
+            {
+              name: "cy"
+            }
+          ]
+        },
+        {
+          name: "jack2-2",
+          child: {
+            name: "jack2-2-1",
+            child: [
+              {
+                name: "wk"
+              },
+              {
+                name: "cy"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
+
+console.log(find(obj))
+```
+
+
+## 计算机网络
+
+> HTTP相关内容先看神的总结：[（建议精读）HTTP灵魂之问，巩固你的 HTTP 知识体系](https://juejin.cn/post/6844904100035821575#heading-91)
+>
+> TCP同理：[(建议收藏)TCP协议灵魂之问，巩固你的网路底层基础](https://juejin.cn/post/6844904070889603085)
+
+##### 1. Get 和 post 的区别
+> [你敢在post和get上刁难我，就别怪我装逼了](https://juejin.cn/post/6844903508370538503)
+-   get用来获取数据，post用来提交数据
+-   get参数有长度限制（受限于url长度，具体的数值取决于浏览器和服务器的限制，最长2048字节），而post无限制。
+-   get请求的数据会附加在url之 ，以 " ？ "分割url和传输数据，多个参数用 "&"连接，而post请求会把请求的数据放在http请求体中。
+-   get是明文传输，post是放在请求体中，但是开发者可以通过抓包工具看到，也相当于是明文的。
+-   get请求会被浏览器主动cache，而post不会，除非手动设置。
+
+##### 2. http1.0 http1.1 http2.0的区别
+
+> [HTTP各版本特性及区别](https://juejin.cn/post/6844903923136856078)
+
+**HTTP 1.0:**
+
+-   任意数据类型都可以发送
+-   有GET、POST、HEAD三种方法
+-   无法复用TCP连接(长连接)
+-   有丰富的请求响应头信息。以header中的`Last-Modified`/`If-Modified-Since`和`Expires`作为缓存标识
+
+**HTTP 1.1:**
+-   引入更多的请求方法类型`PUT`、`PATCH`、`DELETE`、`OPTIONS`、`TRACE`、`CONNECT`
+-   引入长连接，就是TCP连接默认不关闭，可以被多个请求复用，通过请求头connection:keep-alive设置
+-   引入管道连接机制，可以在同一TCP连接里，`同时发送`多个请求
+-   强化了缓存管理和控制`Cache-Control`、`ETag`/`If-None-Match`
+-   支持分块响应，断点续传，利于大文件传输，能过请求头中的`Range`实现
+-   使用了`虚拟网络`，在一台物理服务器上可以存在多个虚拟主机，并且共享一个IP地址
+
+**HTTP 2:**
+-   二进制分帧：不再是纯文本，避免文本歧义，缩小了请求体积
+-   多路复用： 在共享TCP链接的基础上同时发送请求和响应
+-   增加了安全性，使用HTTP 2.0，要求必须至少TLS 1.2
+-   使用`HPACK算法将头部压缩`，用`哈夫曼编码`建立索表，传送索引大大节约了带宽
+-   服务器推送：服务器可以额外的向客户端推送资源，而无需客户端明确的请求
+
+##### 3. https加密过程
+
+> [前端秋招保驾护————航浏览器篇](http://blog.wutortoise.cn/2021/08/10/%E7%A7%8B%E6%8B%9B%E4%BF%9D%E9%A9%BE%E6%8A%A4%E8%88%AA%E2%80%94%E2%80%94%E2%80%94%E6%B5%8F%E8%A7%88%E5%99%A8%E7%AF%87)
+
+##### 4. 什么是CDN
+
+> [CDN与DNS知识汇总](http://hpoenixf.com/DNS%E4%B8%8ECDN%E7%9F%A5%E8%AF%86%E6%B1%87%E6%80%BB.html)
+
+CDN的全称是Content Delivery Network，即内容分发网络。通俗点就是用户访问的资源原本是存放在你自己的服务器，通过修改DNS让用户根据IP等情况来选择合适的CDN缓存服务器来获取资源。过程如下：
+
+1.  当用户点击网站页面上的内容URL，经过本地DNS系统解析，DNS系统会最终将域名的解析权交给CNAME指向的CDN专用DNS服务器。
+1.  CDN的DNS服务器将CDN的全局负载均衡设备IP地址返回用户。
+1.  用户向CDN的全局负载均衡设备发起内容URL访问请求。
+1.  CDN全局负载均衡设备根据用户IP地址，以及用户请求的内容URL，选择一台用户所属区域的区域负载均衡设备，告诉用户向这台设备发起请求。
+1.  区域负载均衡设备会为用户选择一台合适的缓存服务器提供服务，选择的依据包括：根据用户IP地址，判断哪一台服务器距用户最近；根据用户所请求的URL中携带的内容名称，判断哪一台服务器上有用户所需内容；查询各个服务器当前的负载情况，判断哪一台服务器尚有服务能力。基于以上这些条件的综合分析之后，区域负载均衡设备会向全局负载均衡设备返回一台缓存服务器的IP地址。
+1.  全局负载均衡设备把服务器的IP地址返回给用户
+1.  用户向缓存服务器发起请求，缓存服务器响应用户请求，将用户所需内容传送到用户终端。如果这台缓存服务器上并没有用户想要的内容，而区域均衡设备依然将它分配给了用户，那么这台服务器就要向它的上一级缓存服务器请求内容，直至追溯到网站的源服务器将内容拉到本地。
+
+##### 5. TCP和UDP的区别
+
+- TCP是一个**面向连接的**、**可靠的**、基于字节流的传输层协议。
+
+- 而UDP是一个面向无连接的传输层协议。 (就这么简单，其它TCP的特性也就没有了)。
+
+##### 6. TCP三次握手
+
+-   客户端发送SYN，表明要向服务器建立连接。同时带上序列号ISN
+-   服务器返回ACK（序号为客户端序列号+1）作为确认。同时发送SYN作为应答（SYN的序列号为服务端唯一的序号）
+-   客户端发送ACK确认收到回复（序列号为服务端序列号+1）\
+    ![在这里插入图片描述](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/524a1ea0146643caac1d868d96d9815b~tplv-k3u1fbpfcp-zoom-1.image)
+
+> 1、为什么是是三次握手不是两次或四次？
+>
+> 因为，tcp连接是全双工的，数据在两个方向上能同时传递。所以要确保双方，同时能发数据和收数据
+>
+> -   第一次握手：证明了发送方能发数据
+> -   第二次握手：ack确保了接收方能收数据，syn确保了接收方能发数据
+> -   第三次握手：确保了发送方能收数据
+> -   四次握手浪费，两次握手不能保证“双方同时具备收发功能”
+>
+> 2、为什么 客户端 最后还要发送一次确认？\
+> 主要是为了防止已失效的连接请求报文段突然又传到了 服务器，因而产生错误。
+
+##### 7. TCP四次挥手
+
+-   主动关闭的一方发送FIN，表示要单方面关闭数据的传输
+-   服务端收到FIN后，发送一个ACK作为确认（序列号为收到的序列号+1）
+-   等服务器数据传输完毕，也发送一个FIN标识，表示关闭这个方向的数据传输
+-   客户端回复ACK以确认回复\
+    ![在这里插入图片描述](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/bcd40b8e3df14d349ef96e46d0fb9db0~tplv-k3u1fbpfcp-zoom-1.image)
+
+> 1、为什么挥手是四次而握手是三次？\
+> TCP释放连接时之所以需要“四次挥手”,是因为FIN释放连接报文与ACK确认接收报文是分别由第二次和第三次"握手"传输的。为何建立连接时一起传输，释放连接时却要分开传输？
+>
+> -   建立连接时，被动方服务器端结束CLOSED阶段进入“握手”阶段并不需要任何准备，可以直接返回SYN和ACK报文，开始建立连接。
+> -   释放连接时，被动方服务器，突然收到主动方客户端释放连接的请求时并不能立即释放连接，因为还有必要的数据需要处理，所以服务器先返回ACK确认收到报文，经过CLOSE-WAIT阶段准备好释放连接之后，才能返回FIN释放连接报文。
+
+##### 8. 如果想减少TCP连接次数，可以怎么操作
+
+采用http2.0，进行多路复用
+
+##### 9. TCP的流量控制
+
+##### 10. TCP拥塞控制
+
+## 操作系统
+
+##### 1. 进程和线程的区别
+
+##### 2. 进程之间的通信方式
+
+## 数据库
+
+##### 1. 事务的四大特性
+
+##### 2. 数据库的数据类型有哪些
+
+## 设计模式
+
+**1. 观察者模式和发布订阅模式**
+
+> [秋招保驾护航——vue篇之数据双向绑定](https://juejin.cn/post/6993373656051089421)
+
+
+## 数据结构和算法
+
+**1. 树的层序、前序、中序和后序遍历**
+
+```javaScript
+function TreeNode(val, left, right) {
+  this.val = (val===undefined ? 0 : val)
+  this.left = (left===undefined ? null : left)
+  this.right = (right===undefined ? null : right)
+}
+
+// 递归的前序遍历
+function preorderTraversal_recursion(root) {
+  const result = []
+  function preOrderTraverseNode(root) {
+     // 遍历根节点
+     if(root) result.push(root.val)
+     // 遍历左子树
+     if(root.left) preOrderTraverseNode(root.left)
+     // 遍历右子树
+     if(root.right) preOrderTraverseNode(root.right)
+  }
+  preOrderTraverseNode(root)
+  return result
+}
+
+// 迭代的前序遍历
+function preorderTraversal_iteration(root) {
+  const result = []
+  // 递归本质上就是使用栈来实现的，依次迭代就是显示的调用栈
+  const stack = []
+  // 判断是否为空节点
+  if (root) {
+    stack.push(root)
+  } else {
+    return result
+  }
+  // 遍历树
+  while (stack.length > 0) {
+    // 弹出栈顶，相当于遍历根节点
+    var top = stack.pop()
+    result.push(top.val)
+    // 因为栈是先进后出，所以先push右节点
+    if(top.right) stack.push(top.right)
+    // push左节点
+    if(top.left) stack.push(top.left)
+  }
+  return result
+}
+
+// 递归的中序遍历 
+function inorderTraversal_recursion(root) {
+  const result = []
+  function inorder(root) {
+    if(root.left) inorder(root.left)
+    result.push(root.val)
+    if(root.right) inorder(root.right)
+  }
+  if(root) inorder(root)
+  return result
+}
+
+// 迭代的中序遍历
+function inorderTraversal_interation(root) {
+  const result = []
+  const stack = []
+  while (root || stack.length) {
+    while (root) {
+      stack.push(root)
+      root = root.left
+    }
+    var top = stack.pop()
+    result.push(top.val)
+    root = top.right
+  }
+  return result
+}
+
+// 递归的后序遍历
+function postorderTraversal_recursion(root) {
+  const result = []
+  function postorder(root) {
+    if(root.left) postorder(root.left)
+    if(root.right) postorder(root.right)
+    result.push(root.val)
+  }
+  if(root) postorder(root)
+  return result
+}
+
+// 迭代的后序遍历
+function postorderTraversal_interation(root) {
+  const result = []
+  const stack = []
+  var pre = null
+  while (root || stack.length) {
+    while (root) {
+      stack.push(root)
+      root = root.left
+    }
+    var top = stack.pop()
+    // 注意此处需要判断右子树是否被遍历过，从而决定是否去遍历根节点
+    if (!top.right || top.right === pre) {
+      result.push(top.val)
+      pre = top
+      root = null
+    } else {
+      stack.push(top)
+      root = top.right
+    }
+  }
+  return result
+}
+
+// 该层序遍历输出的是一维数组
+function levelOrder(root) {
+  const result = []
+  const stack = []
+  if(root) stack.push(root)
+  while (stack.length) {
+    var top = stack.pop()
+    result.push(top.val)
+    if(top.right) stack.push(top.right)
+    if(top.left) stack.push(top.left)
+  }
+  return result 
+}
+
+// 该层序遍历输出的是二维数组
+function levelOrder_s(root) {
+  const result = []
+  const stack = []
+  if(root) stack.push(root)
+  while (stack.length) {
+    result.push([])
+    var len = stack.length
+    for (let i=0; i<len; i++) {
+      var top = stack.shift()
+      result[result.length-1].push(top.val)
+      if(top.left) stack.push(top.left)
+      if(top.right) stack.push(top.right)
+    }
+  }
+  return result 
+}
+
+// 根据前序遍历和中序遍历寻找二叉树
+var buildTree = function(preorder, inorder) {
+  function findTree(prf, pre, inf, ine) {
+      console.log(prf+" "+pre+" "+inf+" "+ine)
+      if (prf > pre || inf > ine) {
+        return null
+      }
+      var root = new TreeNode(preorder[prf])
+      var pos = inorder.indexOf(preorder[prf])
+      var len = pos - inf
+      if(prf === pre || inf === ine) {
+        return root
+      } else {
+        root.left = findTree(prf+1, prf+len, inf, pos-1)
+        root.right = findTree(prf+1+len, pre, pos+1, ine)
+        return root
+      } 
+  }
+  if (preorder.length) {
+     var root = findTree(0, preorder.length-1, 0, inorder.length-1) 
+  } else {
+      var root = null
+  }
+  return root
+}
+
+var root = new TreeNode(3)
+root.left = new TreeNode(9)
+root.right = new TreeNode(20)
+root.right.left = new TreeNode(15)
+root.right.right = new TreeNode(7)
+
+var preorder = [3,9,20,15,7]
+var inorder = [9,3,15,20,7]
+console.log(buildTree(preorder, inorder))
+```
+
+##### 2. DFS遍历DOM树的元素结点
+
+##### 3. 大数相加
+
+##### 4. 查找二叉树最近子节点
+
+
+
+
+
+
+
+
+
