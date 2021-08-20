@@ -74,7 +74,16 @@ p {
 
 #### 3. margin负值
 
+- `margin-top`和`margin-left`为负值，元素向上、向左移动
+
+- `margin-right`为负值，右侧元素左移，自身不受影响
+- `margin-bottom`为负值，下侧元素上移，本身不受影响
+
+ps：绝对定位 top=0 right = 0时 margin-right 设置负值就能影响本身向右偏移
+
 #### 4. BFC是什么？如何应用？
+
+
 
 #### 5. float布局问题，以及clearfix
 

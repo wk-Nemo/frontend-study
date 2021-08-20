@@ -5,17 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
     <style>
-      html,
-      body {
-        height: 100%;
-      }
-
-      div {
-        height: 100%;
-      }
-
       .main {
-        float: left;
         width: 100%;
         background: #f00;
       }
@@ -28,24 +18,27 @@
       .left {
         width: 200px;
         background: #0f0;
-        float: left;
         margin-left: -100%;
       }
 
       .right {
         width: 300px;
         background: #00f;
-        float: left;
         margin-left: -300px;
+      }
+
+      .cloum {
+        float: left;
+        height: 200px;
       }
     </style>
   </head>
   <body>
-    <div class="main">
+    <div class="main cloum">
       <div class="content">hello world</div>
     </div>
-    <div class="left">你好</div>
-    <div class="right">王鹏浩</div>
+    <div class="left cloum">你好</div>
+    <div class="right cloum">王鹏浩</div>
   </body>
 </html>
 

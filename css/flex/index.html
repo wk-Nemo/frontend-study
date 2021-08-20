@@ -7,41 +7,38 @@
   <title>Document</title>
   <style>
     .box {
+      width: 200px;
+      height: 200px;
+      border: 2px solid #ccc;
+      border-radius: 10px;
+      padding: 20px;
+
       display: flex;
-      flex-direction: row;
-      flex-wrap: wrap-reverse;
-      justify-content: space-around;
-      align-items: center;
-      height: 500px;
-      border: 1px solid black;
+      justify-content: space-between;
     }
     .item {
-      width: 10%;
-      height: 250px;
-      background-color: red;
-      /* margin: 20px; */
+      width: 40px;
+      height: 40px;
+      background-color: black;
+      border-radius: 50%;
+      display: block;
     }
     .div1 {
-      order: 1;
       align-self: flex-start;
     }
     .div2 {
-      order: 3;
+      align-self: center;
     }
     .div3 {
-      order: 2;
-    }
-    .div4 {
-      order: 5;
+      align-self: flex-end;
     }
   </style>
 </head>
 <body>
   <div class="box">
     <div class="item div1"></div>
-    <div class="item div2" style="background-color: black;"></div>
-    <div class="item div3" style="background-color: purple;"></div>
-    <div class="item div4" style="background-color: blue;"></div>
+    <div class="item div2"></div>
+    <div class="item div3"></div>
   </div>
 </body>
 </html>

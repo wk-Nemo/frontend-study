@@ -5,42 +5,52 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
     <style>
-      .container {
-        padding: 0 300px 0 200px;
-        border: 1px solid black;
+      .header {
+        text-align: center;
+        background-color: #00f;
       }
 
-      .content {
-        float: left;
+      .footer {
+        text-align: center;
+        background-color: #0f0;
+        clear: both;
+      }
+
+      .container {
+        border: 1px solid black;
+        padding: 0 300px 0 200px;
+      }
+
+      .center {
         width: 100%;
         background: #f00;
       }
 
       .left {
         width: 200px;
-        background: #0f0;
-        float: left;
-        margin-left: -100%;
-        position: relative;
-        left: -200px;
+        background-color: rgb(209, 142, 55);
+        margin-left: -200px; /*这里相当于左移了200px*/
       }
 
       .right {
         width: 300px;
-        background: #00f;
+        background-color: aquamarine;
+        margin-right: -300px; /*这里相当于自身的300px消除了*/ 
+      }
+
+      .colum {
         float: left;
-        margin-left: -300px;
-        position: relative;
-        right: -300px;
       }
     </style>
   </head>
   <body>
+    <div class="header">这是header</div>
     <div class="container">
-      <div class="content">中间内容</div>
-      <div class="left">左侧区域</div>
-      <div class="right">右侧区域</div>
+      <div class="left colum">左侧区域</div>
+      <div class="center colum">中间内容</div>
+      <div class="right colum">右侧区域</div>
     </div>
+    <div class="footer">这是footer</div>
   </body>
 </html>
 
