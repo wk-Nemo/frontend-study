@@ -292,7 +292,8 @@ ps：绝对定位 top=0 right = 0时 margin-right 设置负值就能影响本身
 
 效果如下：
 
-![image-20210821012317862](C:\Users\lenovo\AppData\Roaming\Typora\typora-user-images\image-20210821012317862.png)
+![image](https://user-images.githubusercontent.com/62100025/130275671-616d58dd-9a12-40c9-b6fb-fe6268aa1c57.png)
+
 
 
 
