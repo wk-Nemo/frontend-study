@@ -224,13 +224,13 @@ function jsonCopy(obj) {
 
 
 function deepCopy(target) {
-  if (typeof target !== 'object') {
+  if (typeof target !== 'object' || obj == null) {
     return target
   }
   let cloneObj = Array.isArray(target) ? [] : {};
   for (let i in target) {
     if (target.hasOwnProperty(i)) {
-      cloneObj[i] = target[i]
+      cloneObj[i] = deepCopy(target[i])
     }
   }
   return cloneObj;
@@ -250,3 +250,4 @@ father.prototype.sayName = function() {
 }
 
 child.prototype = Object.create(father.prototype)
+

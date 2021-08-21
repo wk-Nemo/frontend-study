@@ -123,3 +123,6 @@ function getAge() {
 }
 
 getAge.apply(Obj)
+
+
+
