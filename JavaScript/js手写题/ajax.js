@@ -34,8 +34,20 @@ let data = {
 
 xhr.send(JSON.stringify(data))
 
-/**
- * 跨域
- */
-
-// jsonp
+function ajax(url) {
+  const p = new Promise((resolve, reject) => {
+    let xhr = new XMLHttpRequest()
+    xhr.open('get', url, true)
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState == 4) {
+        if (xhr.status == 200) {
+          resolve(xhr.responseText)
+        } else if (xhr.status == 400) {
+          reject(new Error('404 not found'))
+        }
+      }
+    }
+    xhr.send(null)
+  })
+  return p;
+}

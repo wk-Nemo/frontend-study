@@ -184,5 +184,3 @@ console.log(arr1)
 let arr2 = [1, 2, 3, 4, 5]
 arr2.splice(1, 1, 2.5)
 console.log(arr2)
-
-

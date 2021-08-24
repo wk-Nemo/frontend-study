@@ -40,6 +40,20 @@ function x (a, b, c, d, e) {
 let func = add(x)
 console.log(func(1)(2)(3)(4)(5))
 
+function getAdd(fn) {
+  let args = []
+  let len = fn.length
+  return _c(...newArgs) {
+    if (args.length < fn.length - 1) {
+      args = [...args, ...newArgs]
+      return _c
+    } else {
+      args = [...args, ...new Args]
+      return  fn.call(this, args)
+    }
+  }
+}
+
 // 参数不固定
 function add() {
   let args = []
@@ -124,5 +138,6 @@ function getAge() {
 
 getAge.apply(Obj)
 
-
-
+function add(a, b, c) {
+  return a + b + c
+}
