@@ -49,10 +49,8 @@ js 首先对基础知识进行总结，搭建一个基本的知识体系，能�
 [秋招保驾护航——js面试篇（下）](https://juejin.cn/post/6988515657105047559)
 - js的异步编程 【done】
 - js的模块化管理 【done】
-- ES6新特性
-- DOM
-- BOM
-- 事件
+- ES6新特性【done】
+- 事件【done】
 - ajax 【done】
 
 ## 浏览器
