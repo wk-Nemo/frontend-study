@@ -1,6 +1,6 @@
 ## npx安装react + ts环境
 
-使用`npx create-react-app ts-with-react --typescript`命令配置环境
+使用`npx create-react-app ts-with-react --template typescript`命令配置环境
 
 
 
