@@ -16,7 +16,7 @@ const { dump, parse } = require("./parse")
 //     }
 // }
 
-
+// 创建 StringLiteral 类型节点
 function createStringLiteral(value) {
     return {
         type: 'StringLiteral',
@@ -24,6 +24,7 @@ function createStringLiteral(value) {
     }
 }
 
+// 创建 Identifier 类型节点
 function createIdentifier(name) {
     return {
         type: 'Identifier',
@@ -31,6 +32,7 @@ function createIdentifier(name) {
     }
 }
 
+// 创建 ArrayExpression 类型节点
 function createArrayExpression(elements) {
     return {
         type: 'ArrayExpression',
@@ -38,6 +40,7 @@ function createArrayExpression(elements) {
     }
 }
 
+// 创建 CallExpression 类型节点
 function createCallExpression(callee, arguments) {
     return {
         type: 'CallExpression',
@@ -46,6 +49,7 @@ function createCallExpression(callee, arguments) {
     }
 }
 
+// 将模板AST中Text类型节点转换成JSAST中StringLiteral类型节点
 function transformText(node) {
     if(node.type !== 'Text') {
         return
@@ -54,6 +58,7 @@ function transformText(node) {
     node.jsNode = createStringLiteral(node.content)
 }
 
+// 将模板AST中Element类型节点转换成JSAST中类型节点CallExpression类型节点
 function transformElement(node) {
     return () => {
         if(node.type !== 'Element') {
@@ -72,6 +77,7 @@ function transformElement(node) {
     }
 }
 
+// 将模板AST中Element类型节点转换成JSAST中类型节点FunctionDecl类型节点
 function transformRoot(node) {
     return () => {
         if(node.type !== 'Root') {
@@ -92,10 +98,15 @@ function transformRoot(node) {
     }
 }
 
+// 深度遍历模板AST
 function traverseNode(ast, context) {
+    // 定义初始节点
     context.currentNode = ast
+    // 存储函数的数组
     const exitFns = []
+    // 上下文中的函数
     const transforms = context.nodeTransforms
+    // 依次将函数存入exitFns中
     for(let i = 0; i < transforms.length; i++) {
         const onExit = transforms[i](context.currentNode, context)
         if(onExit) {
@@ -103,9 +114,10 @@ function traverseNode(ast, context) {
         }
         if(!context.currentNode) return
     }
-
+    // 判断是否有子节点
     const children = context.currentNode.children
     if(children) {
+        // 深度遍历
         for(let i = 0; i < children.length; i++) {
             context.parent = context.currentNode
             context.childIndex = i
@@ -113,6 +125,7 @@ function traverseNode(ast, context) {
         }
     }
 
+    // 执行函数
     let i = exitFns.length
     while(i--) {
         exitFns[i]()

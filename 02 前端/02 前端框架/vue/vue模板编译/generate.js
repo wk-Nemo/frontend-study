@@ -3,10 +3,13 @@ const { transform } = require("./transform");
 
 
 function compile(template) {
+    // 生成模板AST
     const ast = parse(template)
+    // 转换成JavaScriptAST
     transform(ast)
+    // 生成渲染函数
     const code = generate(ast.jsNode)
-    console.log(code)
+    return code
 }
 
 const template = '<div><p>Vue</p><p>Template</p></div>'

@@ -1,11 +1,14 @@
 const { tokenSize } = require('./token')
 
 function parse(str) {
+    // 获取 tokens
     const tokens = tokenSize(str)
+    // 根结点
     const root = {
         type: 'Root',
         children: []
     }
+    // 栈
     const elementStack = [root]
 
     while(tokens.length) {
@@ -18,7 +21,9 @@ function parse(str) {
                     tag: t.name,
                     children: []
                 }
+                // 添加到父节点的children属性中
                 parent.children.push(elementNode)
+                // 加入栈顶
                 elementStack.push(elementNode)
                 break
             case 'text':
@@ -26,9 +31,11 @@ function parse(str) {
                     type: 'Text',
                     content: t.content
                 }
+                // 添加到父节点的children属性中
                 parent.children.push(textNode)
                 break
             case 'tagEnd':
+                // 弹出栈顶
                 elementStack.pop()
                 break
         }
@@ -54,8 +61,40 @@ function dump(node, indent = 0) {
     }
 }
 
-// const ast = parse('<div><p>Vue</p><p>Template</p></div>')
-// dump(ast)
+const ast = parse('<div><p>Vue</p><p>Template</p></div>')
+dump(ast)
+
+const a = {
+    type: "Root",
+    children: [
+        {
+            type: "Element",
+            tag: "div",
+            children: [
+                {
+                    type: "Element",
+                    tag: "p",
+                    children: [
+                        {
+                            type: "Text",
+                            content: "Vue"
+                        }
+                    ]
+                },
+                {
+                    type: "Element",
+                    tag: "p",
+                    children: [
+                        {
+                            type: "Text",
+                            content: "Template"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
 
 module.exports = {
     parse,
