@@ -12,17 +12,22 @@ function effect(fn, options = {}) {
         cleanup(effectFn)
         activeEffect = effectFn
         effectStack.push(effectFn)
-        fn()
+        // 将fn的执行结果存储到res中
+        const res = fn()
         effectStack.pop()
         activeEffect = effectStack[effectStack.length - 1]
+        return res
     }
     // 相关选项
     // scheduler 为调度器，可以控制副作用函数执行的时机和次数
     effectFn.options = options
     // 存储所有与该副作用函数有关的依赖集合
     effectFn.deps = []
-    // 执行副作用函数
-    effect()
+    // lazy为true，执行副作用函数
+    if(!options.lazy) {
+        effectFn()
+    }
+    return effectFn
 }
 
 function cleanup(effectFn) {
@@ -61,7 +66,7 @@ function trigger(target, key) {
     //   注意此时forEach还没结束
     //   effectFn会将自身再添加到依赖中，造成无限执行
     const effectsToRun = new Set()
-    effects && effects.forEach(() => {
+    effects && effects.forEach(effectFn => {
         // 如果 trigger 触发的副作用函数和当前正在执行的副作用函数相同，则不触发执行
         if(effectFn !== activeEffect) {
             effectsToRun.add(effectFn)
@@ -78,15 +83,8 @@ function trigger(target, key) {
     })
 }
 
-const obj = new Proxy(data, {
-    get(target, key) {
-        track(target, key)
-        return target[key]
-    },
-    set(target, key, newVal) {
-        target[key] = newVal
-        trigger(target, key)
-        return true
-    }
-})
-
+module.exports = {
+    track,
+    trigger,
+    effect
+}

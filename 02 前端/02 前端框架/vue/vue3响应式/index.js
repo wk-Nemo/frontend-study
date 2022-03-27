@@ -1,27 +1,32 @@
-const bucket = new Set()
+const { track, trigger, effect } = require('./effect')
+const { computed } = require('./computed')
 
 const data = {
-    text: 'Hello World'
-}
-
-function effect() {
-    document.body.innerText = obj.text
+    foo: 1,
+    bar: 2
 }
 
 const obj = new Proxy(data, {
     get(target, key) {
-        bucket.add(effect)
+        track(target, key)
         return target[key]
     },
     set(target, key, newVal) {
         target[key] = newVal
-        bucket.forEach(fn => fn())
+        trigger(target, key)
         return true
     }
 })
 
-effect()
+const sumRes = computed(() => obj.foo + obj.bar)
 
-setTimeout(() => {
-    obj.text = 'Vue3'
+// console.log(sumRes.value)
+// console.log(sumRes.value)
+
+effect(() => {
+    console.log(sumRes.value)
 })
+
+obj.foo++
+
+// console.log(sumRes.value)
