@@ -23,7 +23,7 @@ function effect(fn, options = {}) {
     effectFn.options = options
     // 存储所有与该副作用函数有关的依赖集合
     effectFn.deps = []
-    // lazy为true，执行副作用函数
+    // lazy为false，执行副作用函数
     if(!options.lazy) {
         effectFn()
     }
