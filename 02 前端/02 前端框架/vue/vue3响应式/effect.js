@@ -4,6 +4,8 @@ let activeEffect
 let effectStack = []
 // 存储每个响应式对象的副作用函数
 const bucket = new WeakMap()
+// for in 循环绑定的依赖值
+const ITERATE_KEY = Symbol()
 
 // 调用副作用函数
 function effect(fn, options = {}) {
@@ -56,9 +58,12 @@ function track(target, key) {
 }
 
 // 设置触发器
-function trigger(target, key) {
+function trigger(target, key, type) {
+    // 取得和 target 相关联的副作用函数
     const depsMap = bucket.get(target)
     if(!depsMap) return
+
+    // 取得和 key 相关联的副作用函数
     const effects = depsMap.get(key)
 
     // 直接执行effects中的代码可能出现无限执行的情况
@@ -66,12 +71,27 @@ function trigger(target, key) {
     //   注意此时forEach还没结束
     //   effectFn会将自身再添加到依赖中，造成无限执行
     const effectsToRun = new Set()
+    // 将 effects 添加到 effectsToRun
     effects && effects.forEach(effectFn => {
         // 如果 trigger 触发的副作用函数和当前正在执行的副作用函数相同，则不触发执行
         if(effectFn !== activeEffect) {
             effectsToRun.add(effectFn)
         }
     })
+
+    // 只有新增属性才出发 for in 的依赖，减少了不必要的性能消耗
+    if(type === 'ADD' || type === 'DELETE') {
+        // 取得和 ITERATE_KEY 相关联的副作用函数
+        const interateEffects = depsMap.get(ITERATE_KEY)
+        // 将 interateEffects 添加到 effectsToRun
+        interateEffects && interateEffects.forEach(effectFn => {
+            // 如果 trigger 触发的副作用函数和当前正在执行的副作用函数相同，则不触发执行
+            if(effectFn !== activeEffect) {
+                effectsToRun.add(effectFn)
+            }
+        })
+    }
+    
     effectsToRun.forEach(effectFn => {
         // 如果存在一个副作用函数调度器，则调用该调度器
         if(effectFn.options.scheduler) {
@@ -86,5 +106,6 @@ function trigger(target, key) {
 module.exports = {
     track,
     trigger,
-    effect
+    effect,
+    ITERATE_KEY
 }

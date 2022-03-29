@@ -77,3 +77,15 @@ console.log(p.foo) // 1
 delete p.foo
 console.log(p.foo) // 未定义
 ```
+
+## 2 代理Object
+
+先着手拦截对 Object 的读取操作
+
+- `obj.foo`：访问属性
+- `key in obj`：判断对象和原型上是否存在 key
+- `for(const key in obj){}`：循环遍历对象
+
+Object 响应的时机
+
+## 3 代理数组
