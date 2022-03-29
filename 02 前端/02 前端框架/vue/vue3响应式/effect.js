@@ -58,7 +58,7 @@ function track(target, key) {
 }
 
 // 设置触发器
-function trigger(target, key, type) {
+function trigger(target, key, type, newVal) {
     // 取得和 target 相关联的副作用函数
     const depsMap = bucket.get(target)
     if(!depsMap) return
@@ -88,6 +88,31 @@ function trigger(target, key, type) {
             // 如果 trigger 触发的副作用函数和当前正在执行的副作用函数相同，则不触发执行
             if(effectFn !== activeEffect) {
                 effectsToRun.add(effectFn)
+            }
+        })
+    }
+
+    // 考虑数组元素改变会影响数组长度
+    if(type === 'ADD' && Array.isArray(target)) {
+        const lengthEffects = depsMap.get('length')
+        lengthEffects && lengthEffects.forEach(effectFn => {
+            // 如果 trigger 触发的副作用函数和当前正在执行的副作用函数相同，则不触发执行
+            if(effectFn !== activeEffect) {
+                effectsToRun.add(effectFn)
+            }
+        })
+    }
+
+    // 考虑数组的长度的变化会影响数组元素
+    if(Array.isArray(target) && key === 'length') {
+        // 当数组的长度改变时，所有比长度大的下标都应该拿出来重新执行
+        depsMap.forEach((effects, key) => {
+            if(key >= newVal) {
+                effects.forEach(effectFn => {
+                    if(effectFn !== activeEffect) {
+                        effectsToRun.add(effectFn)
+                    }
+                })
             }
         })
     }

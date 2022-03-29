@@ -8,8 +8,8 @@ function createReactive(obj, isShallow = false, isReadOnly = false) {
             if(key === 'raw') {
                 return target
             }
-            // 只读状态下没有必要建立依赖
-            if(!isReadOnly) {
+            // 只读状态下没有必要建立依赖 && 不和 symbol 类型建立响应联系
+            if(!isReadOnly && typeof key !== 'symbol') {
                 // 捕获依赖
                 track(target, key)
             }
@@ -32,7 +32,8 @@ function createReactive(obj, isShallow = false, isReadOnly = false) {
         },
         // 拦截 for in 循环
         ownKeys(target) {
-            track(target, ITERATE_KEY)
+            const key = Array.isArray(target) ? 'length' : ITERATE_KEY
+            track(target, key)
             return Reflect.ownKeys(target)
         },
         // 拦截新增和修改属性
@@ -44,7 +45,9 @@ function createReactive(obj, isShallow = false, isReadOnly = false) {
 
             const oldVal = target[key]
             // 判断 set 是新增还是修改
-            const type = Object.prototype.hasOwnProperty.call(target, key) ? 'SET' : 'ADD'
+            const type = Array.isArray(target)
+                ? Number(key) < target.length ? 'SET' : 'ADD'
+                : Object.prototype.hasOwnProperty.call(target, key) ? 'SET' : 'ADD'
             // 设置属性
             const res = Reflect.set(target, key, newVal, receiver)
     
@@ -52,7 +55,7 @@ function createReactive(obj, isShallow = false, isReadOnly = false) {
             if(target === receiver.raw) {
                 // 新值和老值不同时（注意新老值为NaN的情况），绑定依赖
                 if(oldVal !== newVal && (oldVal === oldVal || newVal === newVal)) {
-                    trigger(target, key, type)
+                    trigger(target, key, type, newVal)
                 }
             }
     
