@@ -1,3 +1,4 @@
+const { shouldTrack } = require('./reactive')
 // 存储单个副作用函数
 let activeEffect
 // 副作用函数栈，防止 effect 函数嵌套
@@ -42,7 +43,7 @@ function cleanup(effectFn) {
 
 // 捕获调用
 function track(target, key) {
-    if(!activeEffect) return
+    if(!activeEffect || !shouldTrack) return
     let depsMap = bucket.get(target)
     if(!depsMap) {
         bucket.set(target, (depsMap = new Map()))

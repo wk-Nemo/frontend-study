@@ -1,5 +1,30 @@
 const { track, trigger, ITERATE_KEY } = require('./effect')
 
+// 代理数组的方法
+['includes', 'indexOf', 'lastIndexOf'].forEach(method => {
+    const originMethod = Array.prototype[method]
+    arrayInstrumentations[method] = function(...args) {
+        let res = originMethod.apply(this, args)
+
+        if(res === false) {
+            res = originMethod.apply(this.raw, args)
+        }
+
+        return res
+    }
+})
+
+let shouldTrack = true
+['push', 'pop', 'shift', 'unshift', 'splice'].forEach(method => {
+    const originMethod = Array.prototype[method]
+    arrayInstrumentations[method] = function(...args) {
+        shouldTrack = false
+        let res = originMethod.apply(this, args)
+        shouldTrack = true
+        return res
+    }
+})
+
 function createReactive(obj, isShallow = false, isReadOnly = false) {
     return new Proxy(obj, {
         // 拦截属性读取
@@ -7,6 +32,10 @@ function createReactive(obj, isShallow = false, isReadOnly = false) {
             // 让代理对象可以通过 raw 访问原始数据
             if(key === 'raw') {
                 return target
+            }
+            // 代理数组的一些方法 includes
+            if(Array.isArray(target) && arrayInstrumentations.hasOwnProperty(key)) {
+                return Reflect(arrayInstrumentations, key, receiver)
             }
             // 只读状态下没有必要建立依赖 && 不和 symbol 类型建立响应联系
             if(!isReadOnly && typeof key !== 'symbol') {
@@ -81,8 +110,16 @@ function createReactive(obj, isShallow = false, isReadOnly = false) {
     })
 }
 
+const reactiveMap = new Map()
+
 function reactive(obj) {
-    return createReactive(obj)
+    // 避免一个原始对象被代理多次
+    const existionProxy = reactiveMap.get(obj)
+    if(existionProxy) return existionProxy
+
+    const proxy = createReactive(obj)
+    reactiveMap.set(obj, proxy)
+    return proxy
 }
 
 function shallowReactive(obj) {
@@ -98,6 +135,7 @@ function shallowReadObly(obj) {
 }
 
 module.exports = {
+    shouldTrack,
     reactive,
     shallowReactive,
     readOnly,
