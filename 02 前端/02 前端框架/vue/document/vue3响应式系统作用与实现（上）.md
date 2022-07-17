@@ -307,23 +307,94 @@ function trigger(target, key) {
 
 ## 3 完善依赖关系的建立——effect嵌套
 
+副作用函数可以进行嵌套
 
+```js
+const data = {
+    foo: true,
+    bar: true
+}
 
+effect(function effectFn1() {
+    console.log('effectFn1执行')
+    effect(function effectFn2() {
+        console.log('effectFn2执行')
+        const b = obj.bar
+    })
+    const a = obj.foo
+})
 
+obj.foo = false
+```
 
+在嵌套发生的情况下，期望建立的依赖如下：
 
+- `obj.foo`修改触发`effectFn1`，而`effectFn1`又间接触发`effectFn2`
+- `obj.bar`修改触发`effectFn2`
 
+![image-20220717132816916](https://raw.githubusercontent.com/wk-Nemo/imgBed/main/imgimage-20220717132816916.png)
 
+但实际代码的运行结果如上，当`obj.foo`修改时，不但没有触发`effectFn1`反而触发了`effectFn2`。这是因为当`effectFn2`结束运行后，`obj.foo`的读操作拦截`track`在收集依赖的过程中，将全局变量`activeEffect`（此时为`effectFn2`）添加到了对应的属性的副作用函数依赖中。因此，在副作用函数发生嵌套时，**需要一个函数栈`effectStack`，在副作用函数执行时将其压入栈底，待副作用函数执行结束时再将其从栈中弹出，并始终让`activeEffect`指向栈顶的副作用函数**。
 
+```js
+let activeEffect
+// effect栈 预防副作用函数嵌套
+const effectStack = []
 
+function effect(fn) {
+    const effectFn = () => {
+        cleanup(effectFn)
+        activeEffect = effectFn
+        // 副作用函数调用之前入栈
+        effectStack.push(effectFn)
+        fn()
+        // 副作用函数调用完出栈
+        effectStack.pop()
+        // 激活的副作用函数始终指向栈顶
+        activeEffect = effectStack[effectStack.length - 1]
+    }
+    effectFn.deps = []
+    effectFn()
+}
+```
 
+## 4 完善依赖关系的建立——避免无限递归循环
 
+继续完善依赖关系的建立：
 
+```js
+data = {
+    foo: 0
+}
 
+obj = new Proxy(data, {...})
+                       
+effect(() => {
+	obj.foo = obj.foo + 1
+})
+```
 
+上述的副作用函数会造成无限循环：
 
+- 副作用函数读取`obj.foo`，触发`track`，建立两者的依赖关系
+- 副作用函数给`obj.foo`赋值+1后的数字，触发`trigger`，继续执行副作用函数
+- 上面两个步骤一直循环下去，会造成栈溢出
 
+可以给`trigger`增加**守卫条件**：如果`trigger`触发的副作用函数与当前激活的副作用函数`activeEffect`相同，则不触发
 
+```js
+function trigger(target, key) {
+    const depsMap = bucket.get(target)
+    if(!depsMap) return
+    const effects = depsMap.get(key)
 
-
-
+    const effectsToRun = new Set()
+    effects && effects.forEach(effectFn => {
+        // 避免无限循环
+        if(effectFn !== activeEffect) {
+            effectsToRun.add(effectFn)
+        }
+    })
+    effectsToRun.forEach(effectFn => effectFn())
+}
+```

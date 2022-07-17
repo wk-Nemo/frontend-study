@@ -1,11 +1,15 @@
 const bucket = new WeakMap()
 let activeEffect
+const effectStack = []
 
 function effect(fn) {
     const effectFn = () => {
         cleanup(effectFn)
         activeEffect = effectFn
+        effectStack.push(effectFn)
         fn()
+        effectStack.pop()
+        activeEffect = effectStack[effectStack.length - 1]
     }
     effectFn.deps = []
     effectFn()
@@ -39,13 +43,18 @@ function trigger(target, key) {
     if(!depsMap) return
     const effects = depsMap.get(key)
 
-    const effectsToRun = new Set(effects)
+    const effectsToRun = new Set()
+    effects && effects.forEach(effectFn => {
+        if(effectFn !== activeEffect) {
+            effectsToRun.add(effectFn)
+        }
+    })
     effectsToRun.forEach(effectFn => effectFn())
 }
 
 const data = {
-    ok: true,
-    text: 'hello world'
+    foo: true,
+    bar: true
 }
 
 const obj = new Proxy(data, {
@@ -59,15 +68,15 @@ const obj = new Proxy(data, {
     }
 })
 
-effect(
-    function effectFn() {
-        debugger
-        const out = obj.ok ? obj.text : 'hello wk'
-        console.log(out)
-    }
-)
+effect(function effectFn1() {
+    console.log('effectFn1执行')
+    effect(function effectFn2() {
+        console.log('effectFn2执行')
+        const b = obj.bar
+    })
+    const a = obj.foo
+})
 
-obj.ok = false
-obj.text = 'hello my world'
+obj.foo = false
 
-
+obj.bar = false
