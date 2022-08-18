@@ -2,17 +2,54 @@ const bucket = new WeakMap()
 let activeEffect
 const effectStack = []
 
-function effect(fn) {
+function effect(fn, options = {}) {
     const effectFn = () => {
         cleanup(effectFn)
         activeEffect = effectFn
         effectStack.push(effectFn)
-        fn()
+        // 将结果存储到res，并返回
+        const res = fn()
         effectStack.pop()
         activeEffect = effectStack[effectStack.length - 1]
+        return res
     }
+    effectFn.options = options
     effectFn.deps = []
-    effectFn()
+    // 只有非 lazy 时，才执行
+    if(!options.lazy) {
+        effectFn()
+    }
+    return effectFn
+}
+
+function computed(getter) {
+    let value
+    let dirty = true
+
+    const effectFn = effect(getter, {
+        lazy: true,
+        // 如果触发track，就会执行调度，设置dirty为true，重新执行
+        // 如股不触发track，不会执行调度，dirty保持false，取值缓存
+        scheduler() {
+            dirty = true
+            // 手动触发函数响应
+            trigger(obj, 'value')
+        }
+    })
+
+    const obj = {
+        get value() {
+            if(dirty) {
+                value = effectFn()
+                dirty = false
+            }
+            // 手动追踪
+            track(obj, 'value')
+            return value
+        }
+    }
+
+    return obj
 }
 
 function cleanup(effectFn) {
@@ -49,12 +86,18 @@ function trigger(target, key) {
             effectsToRun.add(effectFn)
         }
     })
-    effectsToRun.forEach(effectFn => effectFn())
+    effectsToRun.forEach(effectFn => {
+        if(effectFn.options.scheduler) {
+            effectFn.options.scheduler(effectFn)
+        } else {
+            effectFn()
+        }
+    })
 }
 
 const data = {
-    foo: true,
-    bar: true
+    foo: 1,
+    bar: 2
 }
 
 const obj = new Proxy(data, {
@@ -68,15 +111,22 @@ const obj = new Proxy(data, {
     }
 })
 
-effect(function effectFn1() {
-    console.log('effectFn1执行')
-    effect(function effectFn2() {
-        console.log('effectFn2执行')
-        const b = obj.bar
-    })
-    const a = obj.foo
+const sumRes = computed(() => {
+    const value = obj.foo + obj.bar
+    return value
 })
 
-obj.foo = false
+effect(() => {
+    console.log(sumRes.value)
+})
 
-obj.bar = false
+obj.foo++
+
+
+
+// effect(() => {
+//     console.log(sumRes.value)
+// })
+
+// obj.foo++
+
