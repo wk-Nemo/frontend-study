@@ -275,7 +275,243 @@ function computed(getter) {
 
 ![image-20220819002031612](https://raw.githubusercontent.com/wk-Nemo/imgBed/main/imgimage-20220819002031612.png)
 
+## 2 侦听器watched
 
+在vue中，侦听器watched应该包含如下功能：监听数据变化（存储旧值的能力），并执行回调函数
+
+| 划分层次       | 功能                                                         |
+| -------------- | ------------------------------------------------------------ |
+| 监听数据       | 1）监听响应式数据 <br />2）监听getter函数                    |
+| 从监听层次     | 1）浅监听：某个值的变化<br />2）深监听：对象的每个属性       |
+| 第一次是否执行 | 1）回调懒执行：默认 <br />2）立即回调：immediate为true       |
+| 回调执行时机   | 1）组件更新之前调用：默认，flush为pre<br />2）同步执行：flush为sync<br />3）组件更新后调用：flush为post |
+
+### 基本实现
+
+watch的本质就是观测一个响应式数据，并在数据发生变化时通知执行相应的回调函数。
+
+- 首先判断监听的数据是响应式数据还是getter函数
+  - 响应式数据递归读取，建立依赖关系
+  - getter函数直接执行
+- lazy属性配合schedule使用，在数据变化时，触发回调函数，并且带上新老value
+
+```js
+function watch(source, cb) {
+    let getter
+    if(typeof source === 'function') {
+        getter = source
+    } else {
+        getter = () => traverse(source)
+    }
+
+    let newValue, oldValue
+    const effectFn = effect(
+        () => getter(),
+        {
+            lazy: true,
+            // 数据变化时，触发回调函数
+            scheduler() {
+                newValue = effectFn()
+                cb(newValue, oldValue)
+                oldValue = newValue
+            }
+        }
+    )
+
+    oldValue = effectFn()
+
+    // 递归读取，建立依赖关系
+    function traverse(value, seen = new Set()) {
+        if(typeof value !== 'object' || value ===null || seen.has(value)) return
+        seen.add(value)
+        for(const k in value) {
+            traverse(value[k], seen)
+        }
+
+        return value
+    }
+}
+```
+
+### 立即执行 & 回调时机
+
+watch的回调函数一般只会在响应式数据变化时执行，而如果我们希望watch创建时立即执行一次回调函数，可以指定immediate为true。
+
+- 这里将执行回调的逻辑抽离出来，可以在不同的地方使用
+- immediate则立即执行一次回调，否则值设置oldValue
+- flush选项决定回调触发时的执行时机
+  - flush为pre，在组件更新之前调用，涉及组件更新时机，暂时无法模拟
+  - flush不存在时相当于sync，即同步执行
+  - flush为post，将回调放入微任务队列，实现异步延迟执行
+
+```js
+function watch(source, cb, options) {
+    let getter
+    if(typeof source === 'function') {
+        getter = source
+    } else {
+        getter = () => traverse(source)
+    }
+
+    // 递归读取，建立依赖关系
+    function traverse(value, seen = new Set()) {
+        if(typeof value !== 'object' || value ===null || seen.has(value)) return
+        seen.add(value)
+        for(const k in value) {
+            traverse(value[k], seen)
+        }
+
+        return value
+    }
+
+    let newValue, oldValue
+    // 提取公共逻辑
+    const job = () => {
+        newValue = effectFn()
+        cb(newValue, oldValue)
+        oldValue = newValue
+    }
+
+    const effectFn = effect(
+        () => getter(),
+        {
+            lazy: true,
+            // 数据变化时，触发回调函数
+            scheduler: () => {
+                if(opeions.flush === 'post') {
+                    const p = Promise.resolve()
+                    p.then(job)
+                } else {
+                    job()
+                }
+            }
+        }
+    )
+
+    // immediate为true立即执行回调
+    if(options.immediate) {
+        job()
+    } else {
+        oldValue = effectFn()
+    }
+}
+```
+
+### 竞态问题 & 过期的副作用
+
+竞态问题通常在多进程或多线程中被提及，而在前端开发中，也会遇到类似的场景。
+
+```js
+let finalData
+watch(obj, async () => {
+    const res = await fetch('/path/to/request')
+    finalData = res
+})
+```
+
+上述代码中，通过修改obj的值触发回调，先后发出了两次请求A和B。我们期望的是finalData拿到最新的结果，也就是B返回的数据，但是若B的响应较快，则可能出现A响应数据后到的情况，并且将B返回的值给覆盖掉。
+
+![image-20220820152345561](https://raw.githubusercontent.com/wk-Nemo/imgBed/main/imgimage-20220820152345561.png)
+
+在vue中，watch函数的回调函数接受第三个参数onInvalidate，onInvalidate函数会在当前副作用函数过期时执行。
+
+```js
+let finalData
+watch(obj, async (newValue, oldValue, onInvalidate) => {
+    let expired = false
+    onInvalidate(() => {
+        expired = true
+    })
+
+    const res = await fetch('/path/to/request')
+
+    if(!expired) {
+        finalData = res
+    }
+})
+```
+
+onInvalidate实现的原理是什么呢？在watch每次检测到变更后，在副作用函数重新执行前，会调用我们通过onInvalidate函数注册的过期回调。
+
+```js
+function watch(source, cb, options) {
+    let getter
+    if(typeof source === 'function') {
+        getter = source
+    } else {
+        getter = () => traverse(source)
+    }
+
+    // 递归读取，建立依赖关系
+    function traverse(value, seen = new Set()) {
+        if(typeof value !== 'object' || value ===null || seen.has(value)) return
+        seen.add(value)
+        for(const k in value) {
+            traverse(value[k], seen)
+        }
+
+        return value
+    }
+
+    let newValue, oldValue
+    let cleanup // 存储过期函数
+    function onInvalidate(fn) {
+        cleanup = fn
+    }
+    // 提取公共逻辑
+    const job = () => {
+        newValue = effectFn()
+        // 调用回调函数之前，先调用过期回调
+        if(cleanup) {
+            cleanup()
+        }
+        // onInvalidate作为第三个参数供用户使用
+        cb(newValue, oldValue, onInvalidate)
+        oldValue = newValue
+    }
+
+    const effectFn = effect(
+        () => getter(),
+        {
+            lazy: true,
+            // 数据变化时，触发回调函数
+            scheduler: () => {
+                if(opeions.flush === 'post') {
+                    const p = Promise.resolve()
+                    p.then(job)
+                } else {
+                    job()
+                }
+            }
+        }
+    )
+
+    // immediate为true立即执行回调
+    if(options.immediate) {
+        job()
+    } else {
+        oldValue = effectFn()
+    }
+}
+```
+
+有了上述的代码后，我们再看一个示例了解执行的顺序：
+
+```js
+obj.foo++
+setTimeout(() => {
+    obj.foo++
+}, 200)
+```
+
+- 在我们第一次修改foo时，cleanup为空，不触发过期回调，直接执行watch的回调函数
+- 第一次执行watch回调时，设置expiredA为false，注册了过期回调cleanupA
+- 第二次修改foo时，过期回调cleanup不为空，因此先执行cleanupA，设置expiredA为true，再执行回调函数
+- 第二次执行watch回调时，设置expiredB为false，注册了过期回调cleanupB
+- B先响应，因为expiredB为false，设置finalData为B返回的值
+- A后响应，因为expiredA为true，不设置finalData的值
+
+![image-20220820154630971](https://raw.githubusercontent.com/wk-Nemo/imgBed/main/imgimage-20220820154630971.png)
 
 
 

@@ -22,36 +22,6 @@ function effect(fn, options = {}) {
     return effectFn
 }
 
-function computed(getter) {
-    let value
-    let dirty = true
-
-    const effectFn = effect(getter, {
-        lazy: true,
-        // 如果触发track，就会执行调度，设置dirty为true，重新执行
-        // 如股不触发track，不会执行调度，dirty保持false，取值缓存
-        scheduler() {
-            dirty = true
-            // 手动触发函数响应
-            trigger(obj, 'value')
-        }
-    })
-
-    const obj = {
-        get value() {
-            if(dirty) {
-                value = effectFn()
-                dirty = false
-            }
-            // 手动追踪
-            track(obj, 'value')
-            return value
-        }
-    }
-
-    return obj
-}
-
 function cleanup(effectFn) {
     for(let i = 0; i < effectFn.deps.length; i++) {
         const deps = effectFn.deps[i]
@@ -93,6 +63,96 @@ function trigger(target, key) {
             effectFn()
         }
     })
+}
+
+function computed(getter) {
+    let value
+    let dirty = true
+
+    const effectFn = effect(getter, {
+        lazy: true,
+        // 如果触发track，就会执行调度，设置dirty为true，重新执行
+        // 如股不触发track，不会执行调度，dirty保持false，取值缓存
+        scheduler() {
+            dirty = true
+            // 手动触发函数响应
+            trigger(obj, 'value')
+        }
+    })
+
+    const obj = {
+        get value() {
+            if(dirty) {
+                value = effectFn()
+                dirty = false
+            }
+            // 手动追踪
+            track(obj, 'value')
+            return value
+        }
+    }
+
+    return obj
+}
+
+function watch(source, cb, options) {
+    let getter
+    if(typeof source === 'function') {
+        getter = source
+    } else {
+        getter = () => traverse(source)
+    }
+
+    // 递归读取，建立依赖关系
+    function traverse(value, seen = new Set()) {
+        if(typeof value !== 'object' || value ===null || seen.has(value)) return
+        seen.add(value)
+        for(const k in value) {
+            traverse(value[k], seen)
+        }
+
+        return value
+    }
+
+    let newValue, oldValue
+    let cleanup // 存储过期函数
+    function onInvalidate(fn) {
+        cleanup = fn
+    }
+    // 提取公共逻辑
+    const job = () => {
+        newValue = effectFn()
+        // 调用回调函数之前，先调用过期回调
+        if(cleanup) {
+            cleanup()
+        }
+        // onInvalidate作为第三个参数供用户使用
+        cb(newValue, oldValue, onInvalidate)
+        oldValue = newValue
+    }
+
+    const effectFn = effect(
+        () => getter(),
+        {
+            lazy: true,
+            // 数据变化时，触发回调函数
+            scheduler: () => {
+                if(opeions.flush === 'post') {
+                    const p = Promise.resolve()
+                    p.then(job)
+                } else {
+                    job()
+                }
+            }
+        }
+    )
+
+    // immediate为true立即执行回调
+    if(options.immediate) {
+        job()
+    } else {
+        oldValue = effectFn()
+    }
 }
 
 const data = {
