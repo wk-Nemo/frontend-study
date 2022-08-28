@@ -1,6 +1,7 @@
 const bucket = new WeakMap()
 let activeEffect
 const effectStack = []
+const INTERATE_KEY = Symbol()
 
 function effect(fn, options = {}) {
     const effectFn = () => {
@@ -45,10 +46,11 @@ function track(target, key) {
     activeEffect.deps.push(deps)
 }
 
-function trigger(target, key) {
+function trigger(target, key, type) {
     const depsMap = bucket.get(target)
     if(!depsMap) return
     const effects = depsMap.get(key)
+    const interateEffects = depsMap.get(INTERATE_KEY)
 
     const effectsToRun = new Set()
     effects && effects.forEach(effectFn => {
@@ -56,6 +58,16 @@ function trigger(target, key) {
             effectsToRun.add(effectFn)
         }
     })
+
+    // 只有type为ADD，才触发与ITERATE_KEY相关联的副作用函数重新执行
+    if(type === 'ADD' || type === 'DELETE') {
+        interateEffects && interateEffects.forEach(effectFn => {
+            if(effectFn !== activeEffect) {
+                effectsToRun.add(effectFn)
+            }
+        })
+    }
+
     effectsToRun.forEach(effectFn => {
         if(effectFn.options.scheduler) {
             effectFn.options.scheduler(effectFn)
@@ -155,38 +167,116 @@ function watch(source, cb, options) {
     }
 }
 
-const data = {
-    foo: 1,
-    bar: 2
+function createReactive(obj, isShallow=false, isReadOnly=false) {
+    return new Proxy(obj, {
+        get(target, key, receiver) {
+            // key值为raw时，返回receiver代理的对象
+            if(key === 'raw') {
+                return target
+            }
+            // 只读情况下无法修改属性，因此没有必要建立依赖关系
+            if(!isReadOnly) {
+                // 建立依赖关系
+                track(target, key)
+            }
+            // 拿到值
+            const res = Reflect.get(target, key, receiver)
+            // 浅响应直接返回值
+            if(isShallow) {
+                return res
+            }
+            // 深度响应：如果res为对象，将该数据也包装成响应式
+            if(typeof res === 'object' && res !== null) {
+                return isReadOnly ? readOnly(res) : reactive(res)
+            }
+
+            return res
+        },
+        set(target, key, newVal, receiver) {
+            // 只读属性判断
+            if(isReadOnly) {
+                console.warn(`属性${key}只读`)
+                return true
+            }
+            const oldVal = target[key]
+            // 判断是否是已有的属性
+            const type = Object.prototype.hasOwnProperty.call(target, key) ? 'SET' : 'ADD'
+            const res = Reflect.set(target, key, newVal, receiver)
+
+            // target是receiver代理的对象
+            if(target === receiver.raw) {
+                // NaN === NaN false
+                // NaN !== NaN true
+                if(oldVal !== newVal && (oldVal === oldVal || newVal === newVal)) {
+                    trigger(target, key, type)
+                }
+            }
+            
+            return res
+        },
+        has(target, key) {
+            track(target, key)
+            return Reflect.has(target, key)
+        },
+        ownKeys(target) {
+            track(target, INTERATE_KEY)
+            return Reflect.ownKeys(target)
+        },
+        deleteProperty(target, key) {
+            // 只读属性判断
+            if(isReadOnly) {
+                console.warn(`属性${key}只读`)
+                return true
+            }
+
+            const hadKey = Object.prototype.hasOwnProperty.call(target, key)
+            const res = Reflect.deleteProperty(target, key)
+    
+            if(res && hadKey) {
+                trigger(target, key, 'DELETE')
+            }
+    
+            return res
+        }
+    })
 }
 
-const obj = new Proxy(data, {
-    get(target, key) {
-        track(target, key)
-        return target[key]
-    },
-    set(target, key, newVal) {
-        target[key] = newVal
-        trigger(target, key)
-    }
-})
+function reactive(obj) {
+    return createReactive(obj)
+}
 
-const sumRes = computed(() => {
-    const value = obj.foo + obj.bar
-    return value
-})
+function shallowReactive(obj) {
+    return createReactive(obj, true)
+}
 
-effect(() => {
-    console.log(sumRes.value)
-})
+function readOnly(obj) {
+    return createReactive(obj, false, true)
+}
 
-obj.foo++
-
-
+// 浅响应直接通过控制isShallow参数即可
+function shallowReadOnly(obj) {
+    return createReactive(obj, true, true)
+}
+// const obj = {}
+// const proto = {bar:1}
+// const child = reactive(obj)
+// const parent = reactive(proto)
+// Object.setPrototypeOf(child, parent)
 
 // effect(() => {
-//     console.log(sumRes.value)
+//     console.log(child.bar)
 // })
 
-// obj.foo++
+// child.bar = 2
 
+
+
+
+
+
+
+const obj = reactive({foo: { bar: 1 }})
+effect(() => {
+    console.log(obj.foo.bar)
+})
+obj.foo.bar = 2
